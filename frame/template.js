@@ -269,3 +269,56 @@ GTlate.GenTools.GetNodeContent = function (node) {
     }
     return ret;
 }
+
+GTlate.GenTools.Path={};
+GTlate.GenTools.Path.SearchPaths=function (jfun,root,isin) {
+    //此函数根据判断函数function(node,path)->[bool,int]
+    //bool作用为标记此节点是否为“指定节点”，如果是 根据isin来判断是否递归搜索此节点的子节点
+    //注意此函数不检查根节点
+    //int代表还有几个节点要搜，如果int为0或所有节点搜索完则停止搜索
+    //最后返回实际搜索到的节点数
+    // var nmapper=new Map();
+    // for(var t=0;t<nodes.length;t++){
+    //     nmapper.set(nodes[t],[]);//建立映射，作用为加速 由于map为二叉树或hash表存储 速度会块很多
+    // }
+    //下面递归遍历节点
+    //下面定义内函数
+    //用来搜索dom
+    var bsearch=function (fun,root,basepath,cont) {
+        //递归搜索函数 cont代表是否可以包含
+        //fun为判断函数 root为要搜索的节点 basepath为基础路径[]
+        //采用广度优先策略
+        var childs=root.childNodes;
+        var schilds=[];//此表保存childs的索引值，代表需要递归搜索的节点
+        for(var t=0;t<childs.length;++t){
+            var cpath=basepath.concat();
+            cpath.push(t);//合成下级路径
+            var res=fun(childs[t],cpath);
+            if (childs[t].hasChildNodes() && (res[0] && cont || !res[0])) {
+                //如果可以包含 或者此节点不是指定节点
+                schilds.push(t);
+            }
+            if(res[1]<=0) return;//如果搜索完了 返回
+        }
+        //这是没有搜索完的情况
+        for(var t=0;t<schilds.length;++t){
+            //递归搜索
+            var s=schilds[t];//获得索引
+            var snode=childs[s];//获得节点
+            var cpath=basepath.concat();
+            cpath.push(s);//合成下级path
+            bsearch(fun,snode,cpath,cont);
+        }
+    };
+    //这里开始搞事情
+    bsearch(jfun,root,[],isin);//搜索
+}
+GTlate.GenTools.Path.GetNodeFromPath=function (paths,root) {
+    //此函数从path->root
+    var nownode=root;
+    for(var i=0;i<paths.length;++i){
+        var s=paths[i];//获得索引
+        nownode=nownode.childNodes[s];
+    }
+    return nownode;
+}

@@ -50,6 +50,7 @@ window.onload = function () {
 //基础环境构造目的在于让所有有id的标签都可以被直接访问
 //
 //扫描dom的函数 把所有有id节点都加入container中
+var GFrame={};
 function scandom(ele, container) {
     var clist = ele.childNodes;
     for (var i = 0; i < clist.length; ++i) {
@@ -201,6 +202,23 @@ loader.loadToNode = function (node, url) {
         }
     });
 }
+loader.GetObjectFromUrl=function(url,met,data){
+    //met可以是get或者post 但是都是同步加载
+    //如果是get方式则忽略data参数
+    var text=null;
+    switch(met){
+        case 'GET':
+            text=loader.getTextFromUrl(url);
+            break;
+        case "POST":
+            text=loader.getTextFromUrlP(url,(data==undefined||data==null? {}:data));
+            break;
+        default:
+            return null;
+    }
+    var obj=JSON.parse(text);
+    return obj;
+};
 //类批量操作
 function classReset(oclass, nclass) {
     var nodes = document.getElementsByClassName(oclass);
@@ -275,7 +293,7 @@ function Marge(cont,extr) {
         if(typeof(edata)!="object"||typeof(cont[t])!="object"){
             //如果不是对象类型与对象类型的合并 则直接替换
             cont[t]=edata;
-            return;
+            continue;
         }
         //下面是是对象类型|与对象类型的情况
         if(!(t in cont)){
